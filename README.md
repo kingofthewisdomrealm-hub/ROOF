@@ -19,7 +19,7 @@ Most "how a roof is built" pictures are eight cards in a row. A real re-roof is 
 | File | What's in it |
 |---|---|
 | [`index.html`](index.html) | Series hub |
-| [`apps/shingle/index.html`](apps/shingle/index.html) | **Live.** Table → drag → cutaway / street / inspector → five gates |
+| [`apps/shingle/index.html`](apps/shingle/index.html) | **Live.** A 3D house (three.js). Ring of parts → drag to the house → cutaway / street / inspector → five gates |
 | [`PLAN.md`](PLAN.md) | Shingle build plan: what accurate means, the table grammar, the 24-part catalog, the engine, open decisions |
 
 ## Sister projects (same DNA)
@@ -34,7 +34,7 @@ Open [`apps/shingle/index.html`](apps/shingle/index.html).
 
 1. Drag **Pm — Pull the permit** onto the roof. Then try dragging shingles. Watch it leak.
 2. Work down the table. Call each inspection when the row is done — the gates are tiles.
-3. Toggle **From the street** after the shingles go on. Then read the hint.
+3. Drag the background to walk around the house. Toggle **From the street** after the shingles go on, then read the hint.
 4. There is one tile that lies. You will find it at the in-progress inspection.
 5. Checks the engine must still pass:
    - Nothing lands before the permit.

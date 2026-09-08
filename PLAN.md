@@ -2,7 +2,7 @@
 
 **Goal:** the most visual working model of a Treasure Coast shingle re-roof that still tells the truth — and that a new hire can *play* until the order is in his hands.
 
-Not eight cards in a row. A **Periodic Table of Roof Parts** on the left (every item, sorted by the question it answers and the inspection it has to pass), a **living roof** in the middle that you build by dragging parts onto it, and an **inspector** who lifts a tab. Order is not a line. It is a set of gates with work between them, and the roof looks identical from the street whether you did it right or not.
+Not eight cards in a row. A **Periodic Table of Roof Parts** as the data, drawn on screen as a ring around a **real 3D house** you build by dragging parts onto it, and an **inspector** who lifts a tab. Order is not a line. It is a set of gates with work between them, and the roof looks identical from the street whether you did it right or not.
 
 This is the plan for app 1 (shingle). Tile, metal, and low-slope reuse the same shell.
 
@@ -20,7 +20,7 @@ Three views of the same roof. The user can switch instantly.
 
 | Mode | What it shows | What it must not fake |
 |---|---|---|
-| **Cutaway** | The roof as a stack, peeled back band by band: deck → nails → underlayment → metal → cover. Every layer you placed is visible. | A roof that is one flat color per step. A layer that appears with no thickness under it. |
+| **Cutaway** | The stack cut across the house: bare deck and nails on the left, underlayment in the middle, cover on the right. Every layer you placed is a real surface at its real height. | A roof that is one flat color per step. A layer that appears with no thickness under it. |
 | **From the street** | What the homeowner and the adjuster see: shingles, drip edge, cap, a vent. Everything that keeps water out is invisible. | A "finished" glow. A four-nail roof and a six-nail roof **look identical** from the street — the view says so. |
 | **Inspector** | Only what the current gate checks, lit. Everything else dimmed. The tab lifted. The tape in frame. | Inspecting things the inspector cannot see anymore (step flashing after the shingles are on). |
 
@@ -53,9 +53,13 @@ Rule carried over from `frameworks.ts`: **if you write `if (part.id === 'shingle
 
 ## 3. Visual architecture
 
-### 3.0 One model, two views (decided 6 Sep)
+### 3.0 One model, three decisions (6 Sep)
 
-The periodic table is the **data model** — families, rows, seats, `needs`. It is not what the crew sees first. The **playing view is a dial**: all 24 tiles on one ellipse around the roof, clockwise by `z` from 12 o'clock, the five gate rows drawn as arcs of the ring (grey → gold when open → green PASS → red FAIL). You drag to the middle. **Everything fits on one screen with no scrolling** at 1440, 1024 and a phone. Tiles that are ready right now wear a gold ring — that is the partial order made visible without a list. The card is a peek anchored to the tile, opening toward the center. The table itself is one click away ("The table") as a read-only chart, because the grammar below is still how parts get added.
+**a. The table is the data; the screen is a ring.** All 18 roof parts sit on one ellipse around the house, clockwise by `z` from 12 o'clock. The five gate rows are arcs of that ring (grey → gold when open → green PASS → red FAIL). Ready-now parts wear a gold ring — the partial order, made visible without a list. Everything fits on one screen, no scrolling, at 1440, 1024 and a phone. The periodic grid itself is one click away as a read-only chart, because that grammar is still how parts get added.
+
+**b. Paper is a shelf, not a ring seat.** The permit and the five inspections sit in a straight row directly above the house, in inspection order. Paperwork floats above the work; the roof is what is under it.
+
+**c. It is a real house, in real 3D.** WebGL (three.js), not a drawing. One 32×24 CBS house, 6:12 pitch, with the three things that leak: a porch gable (two valleys), a chimney (step and counter flashing, kick-out) and a plumbing vent. Every part you place is a genuine layer on a roof plane, stacked at its true position in the order — so the cutaway is a real cut, not an illustration of one. Drag the background to walk around the house; the wheel moves you in and out. The permit is a sheet posted on the roof; each passed inspection leaves its numbered inspector standing where he checked.
 
 ### 3.1 The table (the data) — the tray is a periodic table
 
