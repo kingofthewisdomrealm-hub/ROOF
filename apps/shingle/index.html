@@ -5,7 +5,7 @@
 :root{
 	--bg:#07080c; --panel:#0c0e14; --panel2:#15171f; --line:#252836;
 	--ink:#e8e4dc; --dim:#9a9789; --faint:#6d6b62;
-	--gold:#d4a24c; --sky:#6f92b8; --sage:#7fa07a; --rust:#c46a4a;
+	--gold:#c4a574; --goldl:#d4bc96; --sky:#6f92b8; --sage:#7fa07a; --rust:#c46a4a;
 	--paper:#f7f4ed; --paper2:#ece8df; --pink:#161410; --hair:#5c6370;
 	--mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
 	--serif:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;
@@ -22,7 +22,7 @@ button:focus-visible,.tile:focus-visible{outline:2px solid var(--gold);outline-o
 #view3d.spinning{cursor:grabbing}
 #stage{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
 #stage .tile,#stage .corner,#stage #msg,#stage .deckui{pointer-events:auto}
-#stage.over #roofbox{box-shadow:0 0 0 2px var(--gold),0 0 90px rgba(212,162,76,.3);background:rgba(212,162,76,.05)}
+#stage.over #roofbox{box-shadow:0 0 0 2px var(--gold),0 0 90px rgba(196,165,116,.3);background:rgba(196,165,116,.05)}
 #roofbox{position:absolute;border-radius:18px;transition:box-shadow .15s,background .15s}
 #dial{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #dial .arc{fill:none;stroke:#2a2f3d;stroke-width:1.5}
@@ -47,6 +47,9 @@ button:focus-visible,.tile:focus-visible{outline:2px solid var(--gold);outline-o
 #bl{left:14px;bottom:12px}
 #br{right:14px;bottom:12px;align-items:flex-end}
 .brand{font-family:var(--serif);font-size:18px;line-height:1;text-shadow:0 2px 10px #000}
+.brand .cb{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.brand .cb svg{width:74px;height:16px;display:block}
+.brand .cb b{font-family:var(--serif);font-size:12.5px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:#e9e7e2}
 .brand em{color:var(--gold);font-style:italic}
 .brand small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:4px}
 .toggle,.modes{display:inline-flex;background:rgba(21,23,31,.92);border:1px solid var(--line);border-radius:999px;padding:2px;width:max-content}
@@ -69,7 +72,7 @@ button.ghost{background:rgba(21,23,31,.92);border:1px solid var(--line);color:va
 	transition:transform .22s cubic-bezier(.2,.8,.3,1),box-shadow .2s,opacity .22s,left .22s,top .22s;
 	box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .tile:hover{box-shadow:0 10px 26px rgba(0,0,0,.65);z-index:9}
-.tile.ready{box-shadow:0 0 0 2px var(--gold),0 0 20px rgba(212,162,76,.5)}
+.tile.ready{box-shadow:0 0 0 2px var(--gold),0 0 20px rgba(196,165,116,.5)}
 .tile.sel{box-shadow:0 0 0 2px #fff,0 8px 18px rgba(0,0,0,.6)}
 .tile .hd{display:flex;align-items:baseline;justify-content:space-between;gap:4px;line-height:1}
 .tile .z{font-family:var(--serif);font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
@@ -98,7 +101,7 @@ body[data-mode="deck"] .tile.deckcard .gate{font-size:8px;margin-top:2px}
 body[data-mode="deck"] .tile.deckcard .art{margin:4px 0 5px}
 /* the one in your hand is the one with the weight */
 body[data-mode="deck"] .tile.inhand{border-width:2px;box-shadow:0 14px 40px rgba(0,0,0,.7)}
-body[data-mode="deck"] .tile.inhand.ready{box-shadow:0 0 0 2.5px var(--gold),0 0 30px rgba(212,162,76,.55),0 14px 40px rgba(0,0,0,.7)}
+body[data-mode="deck"] .tile.inhand.ready{box-shadow:0 0 0 2.5px var(--gold),0 0 30px rgba(196,165,116,.55),0 14px 40px rgba(0,0,0,.7)}
 body[data-mode="deck"] .tile.inhand:hover{transform:translate(-50%,-50%) rotate(0deg) scale(1.03)}
 
 #ghost{position:fixed;z-index:50;pointer-events:none;width:var(--cw);height:var(--ch);display:none;opacity:.95}
@@ -211,7 +214,10 @@ body[data-mode="spread"] #c-spread{display:block}
 	<div id="c-spread"></div>
 
 	<div class="corner" id="tl">
-		<div class="brand">ROOF <em>Shingle</em><small>Treasure Coast re-roof · crew edition</small></div>
+		<div class="brand">
+			<span class="cb"><svg viewBox="0 0 120 26" aria-hidden="true"><path d="M2 13 H44" stroke="#c4a574" stroke-width="1.6"/><path d="M76 13 H118" stroke="#c4a574" stroke-width="1.6"/><path d="M52 22 V19 L54 6 L57.5 13 L60 4 L62.5 13 L66 6 L68 19 V22 Z" fill="none" stroke="#c4a574" stroke-width="2" stroke-linejoin="round"/></svg><b>Covenant Builders</b></span>
+			ROOF <em>Shingle</em><small>Treasure Coast re-roof · crew edition</small>
+		</div>
 		<div class="modes" role="tablist" aria-label="Cards">
 			<button data-mode="deck" class="on">Deck</button>
 			<button data-mode="spread">See all cards</button>
@@ -949,6 +955,23 @@ function tex(key, w, h, draw){
 	t.encoding = THREE.sRGBEncoding;
 	texCache[key] = t; return t;
 }
+/* the wordmark, drawn: a crown between two rules, letter-spaced caps */
+function crown(g, cx, cy, w, color){
+	const h = w*0.62, x = cx-w/2, y = cy-h/2;
+	const pts = [[0,.86],[.16,.16],[.33,.56],[.5,0],[.67,.56],[.84,.16],[1,.86]];
+	g.strokeStyle=color; g.lineWidth=Math.max(2,w*0.075); g.lineJoin='round'; g.lineCap='round';
+	g.beginPath();
+	pts.forEach(([px,py],i)=>{ const X=x+px*w, Y=y+py*h; i?g.lineTo(X,Y):g.moveTo(X,Y); });
+	g.lineTo(x+w, y+h); g.lineTo(x, y+h); g.closePath(); g.stroke();
+	g.beginPath(); g.moveTo(x, y+h*0.86); g.lineTo(x+w, y+h*0.86); g.stroke();
+}
+function spaced(g, text, cx, y, font, color, sp){
+	g.font = font; g.fillStyle = color; g.textBaseline = 'alphabetic';
+	const chars=[...text];
+	let total = chars.reduce((a,c)=>a+g.measureText(c).width+sp, -sp);
+	let x = cx - total/2;
+	chars.forEach(c=>{ g.fillText(c, x, y); x += g.measureText(c).width + sp; });
+}
 const T = {
 	old: ()=>tex('old',256,256,(g,w,h)=>{
 		g.fillStyle='#5b544e'; g.fillRect(0,0,w,h);
@@ -1020,6 +1043,27 @@ const T = {
 		g.fillStyle='#7d5348'; g.fillRect(0,0,w,h);
 		for(let r=0;r<8;r++){ const y=r*16; for(let i=0;i<4;i++){ const x=i*32+(r%2?16:0);
 			g.fillStyle=`rgb(${120+Math.random()*30},${68+Math.random()*20},${56+Math.random()*16})`; g.fillRect(x+1.5,y+1.5,29,13); } }
+	}),
+	sign: ()=>tex('sign',640,400,(g,w,h)=>{
+		g.fillStyle='#12182B'; g.fillRect(0,0,w,h);
+		g.strokeStyle='#c4a574'; g.lineWidth=4; g.strokeRect(14,14,w-28,h-28);
+		crown(g, w/2, 74, 78, '#c4a574');
+		g.strokeStyle='#c4a574'; g.lineWidth=3;
+		g.beginPath(); g.moveTo(60,74); g.lineTo(w/2-58,74); g.moveTo(w/2+58,74); g.lineTo(w-60,74); g.stroke();
+		spaced(g,'COVENANT BUILDERS', w/2, 186, 'bold 52px Georgia,serif', '#e9e7e2', 7);
+		spaced(g,'WE DELIVER', w/2, 232, '600 27px Helvetica,Arial,sans-serif', '#c4a574', 11);
+		g.strokeStyle='rgba(196,165,116,.5)'; g.lineWidth=2;
+		g.beginPath(); g.moveTo(140,262); g.lineTo(w-140,262); g.stroke();
+		spaced(g,'RE-ROOF IN PROGRESS', w/2, 296, '600 21px Helvetica,Arial,sans-serif', '#d4bc96', 5);
+		spaced(g,'FLORIDA CERTIFIED BUILDING CONTRACTOR CBC1253676', w/2, 330, '500 16px Helvetica,Arial,sans-serif', '#a9a49a', 2);
+		spaced(g,'(772) 473-7115  ·  covenantbuilders.org', w/2, 360, '600 19px Helvetica,Arial,sans-serif', '#e9e7e2', 2);
+	}),
+	dump: ()=>tex('dump',512,128,(g,w,h)=>{
+		g.fillStyle='#12182B'; g.fillRect(0,0,w,h);
+		for(let i=0;i<300;i++){ g.fillStyle=`rgba(${90+Math.random()*50},${100+Math.random()*40},${125+Math.random()*40},.07)`; g.fillRect(Math.random()*w,Math.random()*h,3,3); }
+		crown(g, 54, 52, 40, '#c4a574');
+		spaced(g,'COVENANT BUILDERS', 300, 62, 'bold 40px Georgia,serif', '#e9e7e2', 5);
+		spaced(g,'WE DELIVER  ·  (772) 473-7115', 300, 96, '600 20px Helvetica,Arial,sans-serif', '#c4a574', 3);
 	}),
 	permit: ()=>tex('permit',128,168,(g,w,h)=>{
 		g.fillStyle='#f7f3e8'; g.fillRect(0,0,w,h);
@@ -1147,6 +1191,17 @@ function buildShell(){
 	// plumbing vent
 	const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,2.2,12), new THREE.MeshStandardMaterial({color:0xc9ccd1, roughness:.55}));
 	pipe.position.set(-1, 11.6, 9); pipe.castShadow=true; shell.add(pipe);
+	// the job-site sign, planted in the front yard
+	{
+		const sg = new THREE.Group(); sg.position.set(-23, 0, 13); sg.rotation.y = -0.72;
+		const post = new THREE.MeshStandardMaterial({color:0x6f6455, roughness:.95});
+		[-3.5, 3.5].forEach(x=>{ const p = box(0.45,8.7,0.45, x, 4.35, 0, post); shell.remove(p); sg.add(p); });
+		const face = new THREE.MeshBasicMaterial({map:T.sign()});
+		const back = new THREE.MeshStandardMaterial({color:0x12182B, roughness:.9});
+		const panel = new THREE.Mesh(new THREE.BoxGeometry(9, 5.6, 0.3), [back,back,back,back,face,back]);
+		panel.position.set(0, 5.9, 0.1); panel.castShadow = panel.receiveShadow = true; sg.add(panel);
+		shell.add(sg);
+	}
 	// ground
 	const ground = new THREE.Mesh(new THREE.CircleGeometry(120,64), new THREE.MeshStandardMaterial({color:0x11170f, roughness:1}));
 	ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; shell.add(ground);
@@ -1240,6 +1295,23 @@ function buildLayers(){
 			const s = new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8), m); s.position.set(x,y,z); reg(s,'seal');
 		});
 	}
+	// the roll-off shows up on tear-off day, with the company's name on the side
+	if(L('tearoff')){
+		const dg = new THREE.Group(); dg.position.set(19.5, 0, 15); dg.rotation.y = 0.52;
+		const side = new THREE.MeshStandardMaterial({map:T.dump(), roughness:.8, metalness:.15});
+		const steel = new THREE.MeshStandardMaterial({color:0x1a2136, roughness:.75, metalness:.2});
+		const body = new THREE.Mesh(new THREE.BoxGeometry(15,5,7.5), [steel,steel,steel,steel,side,side]);
+		body.position.y = 3.1; dg.add(body);
+		const sk = new THREE.Mesh(new THREE.BoxGeometry(15.4,0.5,7.9), steel); sk.position.y = 0.55; dg.add(sk);
+		for(let i=0;i<22;i++){
+			const d = new THREE.Mesh(new THREE.BoxGeometry(1.6+Math.random(),0.3,1.2+Math.random()),
+				new THREE.MeshStandardMaterial({color:0x4a433d, roughness:1}));
+			d.position.set((Math.random()-0.5)*13, 5.3+Math.random()*0.7, (Math.random()-0.5)*6);
+			d.rotation.set(Math.random()*0.5, Math.random()*3, Math.random()*0.4); dg.add(d);
+		}
+		dg.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+		dg.userData.layer='dumpster'; (LAYERS.dumpster=LAYERS.dumpster||[]).push(dg); world.add(dg);
+	}
 	// the permit, posted on the roof
 	if(L('permit')){
 		const P = PLANES.front;
@@ -1279,6 +1351,7 @@ function applyView(){
 			if(layer==='zone3'){ m.visible = v==='inspector' && lit.has('zone3'); return; }
 			m.visible = true;
 			const mat = m.material;
+			if(!mat){ m.traverse(o=>{ if(o.material){ o.material.transparent = v==='inspector'; o.material.opacity = v==='inspector' ? .3 : 1; } }); return; }
 			if(mat.clippingPlanes !== undefined) mat.clippingPlanes = (v==='cutaway' && m.userData.clip) ? [CLIP[m.userData.clip]] : null;
 			const dim = v==='inspector' && !lit.has(layer);
 			if(mat.opacity !== undefined){ mat.transparent = dim || mat.userData_wasTransparent || layer==='nails'; mat.opacity = dim ? 0.16 : 1; }
@@ -1330,7 +1403,7 @@ function resize3d(){
 	const half = THREE.MathUtils.degToRad(camera.fov)/2;
 	const av = Math.atan(Math.tan(half)*(r.height/H));
 	const ah = Math.atan(Math.tan(half)*camera.aspect*(r.width/W));
-	const fit = 19.5 / Math.sin(Math.max(0.12, Math.min(av,ah)));
+	const fit = 21.5 / Math.sin(Math.max(0.12, Math.min(av,ah)));
 	VIEWS.cutaway.dist = fit; VIEWS.street.dist = fit*1.1; VIEWS.inspector.dist = fit*0.76;
 	camGoal.dist = VIEWS[state.view].dist; cam.dist = camGoal.dist;
 }
