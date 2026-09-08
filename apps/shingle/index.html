@@ -17,9 +17,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 button{font:inherit}
 button:focus-visible,.tile:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
-/* ---------- the stage = the whole screen ---------- */
-#stage{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 50%,#1a2a3e 0%,#0b1119 46%,#07080c 80%);overflow:hidden;touch-action:none}
-#stage.over #roofbox{box-shadow:0 0 0 3px var(--gold),0 0 60px rgba(212,162,76,.25)}
+#view3d{position:fixed;inset:0;z-index:0;display:block;touch-action:none;cursor:grab}
+#view3d.spinning{cursor:grabbing}
+#stage{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+#stage .tile,#stage .corner,#stage #msg{pointer-events:auto}
+#stage.over #roofbox{box-shadow:0 0 0 2px var(--gold),0 0 80px rgba(212,162,76,.28);background:rgba(212,162,76,.05)}
+#roofbox{position:absolute;border-radius:18px;transition:box-shadow .15s,background .15s}
 #dial{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #dial .arc{fill:none;stroke:#2a2f3d;stroke-width:1.5}
 #dial .arc.pass{stroke:var(--sage);stroke-width:2.5}
@@ -28,11 +31,13 @@ button:focus-visible,.tile:focus-visible{outline:2px solid var(--gold);outline-o
 #dial .rl{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;fill:#6d6b62}
 #dial .rl.pass{fill:var(--sage)}#dial .rl.fail{fill:var(--rust)}#dial .rl.open{fill:var(--gold)}
 
-#roofbox{position:absolute;border-radius:14px;transition:box-shadow .15s}
-#roofbox svg{width:100%;height:100%;display:block}
-#msg{position:absolute;left:50%;transform:translateX(-50%);text-align:center;max-width:46ch;font-size:12px;line-height:1.4;color:var(--dim);pointer-events:none;text-wrap:balance}
+#msg{position:absolute;left:50%;transform:translateX(-50%);text-align:center;max-width:46ch;font-size:12px;line-height:1.4;color:var(--dim);text-wrap:balance;text-shadow:0 2px 10px #000}
 #msg b{color:var(--ink)}
 #msg.leak b{color:var(--sky)}#msg.pass b{color:var(--sage)}#msg.fail b{color:var(--rust)}
+#bands{position:absolute;display:none;justify-content:space-around;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);pointer-events:none}
+#bands.on{display:flex}
+.drip{position:fixed;z-index:20;width:7px;height:11px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#6f92b8;pointer-events:none;animation:drip 1.1s ease-in forwards}
+@keyframes drip{0%{opacity:1;transform:translateY(0) scaleY(.8)}100%{opacity:0;transform:translateY(70px) scaleY(1.3)}}
 
 /* corners */
 .corner{position:absolute;z-index:3;display:flex;flex-direction:column;gap:6px}
@@ -40,26 +45,26 @@ button:focus-visible,.tile:focus-visible{outline:2px solid var(--gold);outline-o
 #tr{right:14px;top:12px;align-items:flex-end}
 #bl{left:14px;bottom:12px}
 #br{right:14px;bottom:12px;align-items:flex-end}
-.brand{font-family:var(--serif);font-size:18px;line-height:1}
+.brand{font-family:var(--serif);font-size:18px;line-height:1;text-shadow:0 2px 10px #000}
 .brand em{color:var(--gold);font-style:italic}
 .brand small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:4px}
 .toggle{display:inline-flex;background:rgba(21,23,31,.9);border:1px solid var(--line);border-radius:999px;padding:2px;width:max-content}
 .toggle button{background:none;border:0;color:var(--dim);font-size:11px;padding:4px 9px;border-radius:999px;cursor:pointer}
 .toggle button.on{background:var(--gold);color:#17140c;font-weight:600}
 button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var(--ink);padding:4px 10px;border-radius:999px;cursor:pointer;font-size:11px}
-.stamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--faint);background:rgba(12,14,20,.8);width:max-content}
+.stamp{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid var(--line);color:var(--faint);background:rgba(12,14,20,.85);width:max-content}
 .stamp.pass{border-color:var(--sage);color:var(--sage)}
 .stamp.fail{border-color:var(--rust);color:var(--rust)}
-.score{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.score{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-shadow:0 2px 8px #000}
 .score b{color:var(--ink);font-weight:600}
-.foot{font-size:9.5px;color:var(--faint);max-width:30ch;line-height:1.35}
+.foot{font-size:9.5px;color:var(--faint);max-width:30ch;line-height:1.35;text-align:right}
 .foot a{color:var(--gold)}
 
 /* ---------- the ring of tiles ---------- */
-.tile{position:absolute;z-index:4;width:var(--tw);height:var(--th);margin:0;display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:3px 4px;border:1px solid var(--hair);color:var(--pink);text-align:left;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;transition:transform .15s,box-shadow .15s,opacity .2s;transform:translate(-50%,-50%)}
-.tile:hover{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 8px 18px rgba(0,0,0,.5);z-index:6}
-.tile.ready{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(212,162,76,.45)}
-.tile.sel{box-shadow:0 0 0 2px #fff,0 8px 18px rgba(0,0,0,.5)}
+.tile{position:absolute;z-index:4;width:var(--tw);height:var(--th);margin:0;display:flex;flex-direction:column;justify-content:space-between;border-radius:6px;padding:3px 4px;border:1px solid var(--hair);color:var(--pink);text-align:left;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;transition:transform .15s,box-shadow .15s,opacity .2s;transform:translate(-50%,-50%);box-shadow:0 4px 14px rgba(0,0,0,.45)}
+.tile:hover{transform:translate(-50%,-50%) scale(1.06);box-shadow:0 10px 24px rgba(0,0,0,.6);z-index:6}
+.tile.ready{box-shadow:0 0 0 2px var(--gold),0 0 18px rgba(212,162,76,.5)}
+.tile.sel{box-shadow:0 0 0 2px #fff,0 8px 18px rgba(0,0,0,.6)}
 .tile .z{font-size:8px;font-variant-numeric:tabular-nums;opacity:.7;line-height:1}
 .tile .sym{font-family:var(--serif);font-size:19px;line-height:.9;letter-spacing:-.01em}
 .tile .pic{display:block;height:24px;width:28px;margin:-1px 0 0}
@@ -67,7 +72,6 @@ button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var
 @media (max-width:760px){.tile .pic{height:19px;width:22px}}
 #peek .pic{display:block;width:44px;height:38px;margin-bottom:2px}
 .tile .nm{font-size:7px;line-height:1.1;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile .gate{position:absolute;top:3px;right:4px;font-size:6.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
 .tile.spent{background:var(--paper2)!important;color:#8a8578;border-color:#c9c3b5;cursor:default}
 .tile.spent::after{content:"✓";position:absolute;right:4px;bottom:3px;font-size:11px;color:#7fa07a}
 .tile.covered{opacity:.4;cursor:not-allowed}
@@ -76,10 +80,10 @@ button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var
 .tile.shake{animation:shake .4s}
 @keyframes shake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 5px),-50%)}40%{transform:translate(calc(-50% + 5px),-50%)}60%{transform:translate(calc(-50% - 4px),-50%)}80%{transform:translate(calc(-50% + 4px),-50%)}}
 #ghost{position:fixed;z-index:50;pointer-events:none;width:var(--tw);height:var(--th);display:none;opacity:.95}
-#ghost .tile{position:static;transform:rotate(-4deg);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+#ghost .tile{position:static;transform:rotate(-4deg);box-shadow:0 18px 40px rgba(0,0,0,.7)}
 
-/* ---------- the peek (the card, anchored to the tile) ---------- */
-#peek{position:fixed;z-index:40;width:19rem;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 12px;box-shadow:0 18px 50px rgba(0,0,0,.6)}
+/* ---------- the peek ---------- */
+#peek{position:fixed;z-index:40;width:19rem;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto;display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:0 18px 50px rgba(0,0,0,.7)}
 #peek.on{display:block}
 #peek .bar{height:3px;width:30px;border-radius:99px;background:var(--gold);margin-bottom:8px}
 #peek .kick{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin:0 0 2px}
@@ -100,8 +104,8 @@ button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var
 .eat{background:var(--gold);border:0;color:#17140c;font-weight:700;padding:7px 13px;border-radius:999px;cursor:pointer;font-size:12px}
 #peek .close{position:absolute;right:8px;top:6px;background:none;border:0;color:var(--faint);font-size:16px;cursor:pointer;padding:2px 6px}
 
-/* ---------- the chart overlay (the table, read-only) ---------- */
-#chart{position:fixed;inset:0;z-index:30;display:none;background:rgba(7,8,12,.8);align-items:center;justify-content:center;padding:20px}
+/* ---------- the chart overlay ---------- */
+#chart{position:fixed;inset:0;z-index:30;display:none;background:rgba(7,8,12,.85);align-items:center;justify-content:center;padding:20px}
 #chart.on{display:flex}
 .paper{position:relative;background:var(--paper);border-radius:10px;padding:14px 14px 12px;color:var(--pink);max-width:min(58rem,100%);max-height:100%;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.7)}
 .paper h2{margin:0 0 10px;text-align:center;font-size:10px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:#6d6b62}
@@ -112,56 +116,29 @@ button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var
 .fam span{display:block;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#6d6b62}
 .rowlab{display:flex;align-items:center;justify-content:flex-end;padding-right:5px}
 .rowlab span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#6d6b62;white-space:nowrap}
-.grid .tile{position:static;transform:none;width:auto;height:auto;min-height:3.4rem;cursor:default}
+.grid .tile{position:static;transform:none;width:auto;height:auto;min-height:3.4rem;cursor:default;box-shadow:none}
 .grid .tile:hover{transform:none;box-shadow:none}
 .grid .tile .nm{white-space:normal;font-size:8px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 4px 0;font-size:9.5px;color:#6d6b62}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:4px;border:1px solid var(--hair)}
 
 /* ---------- done ---------- */
-#done{display:none;position:fixed;inset:0;z-index:45;background:rgba(7,8,12,.88);align-items:center;justify-content:center;text-align:center;padding:24px}
+#done{display:none;position:fixed;inset:0;z-index:45;background:rgba(7,8,12,.9);align-items:center;justify-content:center;text-align:center;padding:24px}
 #done.on{display:flex}
 #done h2{font-family:var(--serif);font-weight:400;font-size:36px;margin:0 0 6px;color:#fff;text-wrap:balance}
 #done .stars{font-size:26px;color:var(--gold);letter-spacing:.2em;margin-bottom:8px}
 #done p{color:var(--dim);max-width:44ch;margin:0 auto 14px;line-height:1.5}
 #done p b{color:var(--ink)}
-.drip{animation:drip 1.1s ease-in forwards}
-@keyframes drip{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(60px)}}
-.bandlab{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;fill:#9a9789}
 @media (max-width:760px){:root{--tw:46px;--th:42px}.tile .sym{font-size:15px}.tile .nm{display:none}.brand small,.foot{display:none}.toggle button{font-size:10px;padding:3px 7px}}
 @media (prefers-reduced-motion:reduce){.tile,.drip,.tile.shake{animation:none;transition:none}}
 </style>
 
-<div id="stage" aria-label="The roof, with every part around it">
+<canvas id="view3d"></canvas>
+<div id="stage" aria-label="The house, with every roof part around it">
 	<svg id="dial" aria-hidden="true"></svg>
-	<div id="roofbox">
-		<svg viewBox="0 0 800 560" id="scene" role="img" aria-label="A shingle roof being built in layers">
-			<defs>
-				<linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6dccb"/><stop offset="1" stop-color="#b9a892"/></linearGradient>
-				<linearGradient id="skyfade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1119" stop-opacity="0"/><stop offset="1" stop-color="#07080c"/></linearGradient>
-				<filter id="glow"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#f0d9a0" flood-opacity=".9"/></filter>
-				<clipPath id="cutNails" clipPathUnits="userSpaceOnUse"><polygon points="190,470 325,470 465,130 330,130"/></clipPath>
-				<clipPath id="cutWater" clipPathUnits="userSpaceOnUse"><rect x="0.30" y="0" width="0.70" height="1"/></clipPath>
-				<clipPath id="cutCover" clipPathUnits="userSpaceOnUse"><rect x="0.56" y="0" width="0.44" height="1"/></clipPath>
-			</defs>
-			<polygon points="330,130 780,130 730,70 280,70" fill="#0e131b"/>
-			<rect x="0" y="470" width="800" height="90" fill="url(#skyfade)"/>
-			<g id="wall" transform="matrix(140 -340 0 -110 640 470)">
-				<rect x="0" y="0" width="1" height="1" fill="url(#wallg)" vector-effect="non-scaling-stroke" stroke="#8c7d68" stroke-width="1"/>
-				<g id="L-counter" style="display:none"><rect x="0" y="0" width="1" height="0.16" fill="#b9c1c9" stroke="#6d757e" vector-effect="non-scaling-stroke" stroke-width="1"/><rect x="0" y="0.16" width="1" height="0.03" fill="#7d858e"/></g>
-			</g>
-			<g id="P2" transform="matrix(150 50 140 -340 40 420)"></g>
-			<polygon points="40,420 190,470 190,488 40,438" fill="#8b6b4d"/>
-			<polygon points="190,470 640,470 640,488 190,488" fill="#a07a56"/>
-			<path d="M186,494 H646" stroke="#6f7680" stroke-width="7" stroke-linecap="round" fill="none"/>
-			<g id="P1" transform="matrix(450 0 140 -340 190 470)"></g>
-			<g id="S"></g>
-			<g id="pipe"><rect x="450" y="280" width="13" height="42" fill="#c9ccd1" stroke="#5c6370" stroke-width="1"/><ellipse cx="456.5" cy="280" rx="6.5" ry="2.4" fill="#4b5058"/></g>
-			<g id="leaks"></g>
-			<g id="bands"></g>
-		</svg>
-	</div>
-	<p id="msg">Drag a part onto the roof. Hover a tile to read it. <b>Gold ring = ready now.</b></p>
+	<div id="roofbox"></div>
+	<div id="bands"><span>deck</span><span>underlayment</span><span>cover</span></div>
+	<p id="msg">Drag a part onto the house. Hover a tile to read it. <b>Gold ring = ready now.</b> Drag the background to walk around.</p>
 
 	<div class="corner" id="tl">
 		<div class="brand">ROOF <em>Shingle</em><small>Treasure Coast re-roof · crew edition</small></div>
@@ -184,6 +161,7 @@ button.ghost{background:rgba(21,23,31,.9);border:1px solid var(--line);color:var
 <div id="done"><div><div class="stars" id="d-stars"></div><h2 id="d-title"></h2><p id="d-body"></p><button class="eat" id="again">Roof another one</button></div></div>
 <div id="ghost"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 /* ============================================================
    DATA — the table. Hue lives on the family. Order lives on
@@ -420,7 +398,7 @@ function layout(){
 	});
 	// roof box: largest 800:560 rectangle inside the inner ellipse, minus the paper shelf above it
 	const irx = rx - tw/2 - 18, iry = ry - th/2 - 18 - 14 - (th+10)/2;
-	const k = 800/560;
+	const k = 1.62;
 	const b = 1/Math.sqrt((k/irx)**2 + (1/iry)**2), a = k*b;
 	const box = document.getElementById('roofbox');
 	box.style.width = (2*a)+'px'; box.style.height = (2*b)+'px';
@@ -432,7 +410,10 @@ function layout(){
 		const t = stage.querySelector(`.tile[data-id="${p.id}"]`); if(!t) return;
 		t.style.left = (cx + (i-(PAPER.length-1)/2)*(tw+gap))+'px'; t.style.top = (top - th/2 - 8)+'px';
 	});
-	const msg = document.getElementById('msg'); msg.style.top = (top + 2*b - 6)+'px';
+	const bands = document.getElementById('bands');
+	bands.style.left = (cx-a*0.94)+'px'; bands.style.width = (2*a*0.94)+'px'; bands.style.top = (top + 2*b - 22)+'px';
+	const msg = document.getElementById('msg'); msg.style.top = (top + 2*b + 2)+'px';
+	if(typeof resize3d==='function') resize3d();
 	drawDial();
 }
 function drawDial(){
@@ -549,12 +530,13 @@ function attempt(id, e){
 function say(kind, html){ const m = document.getElementById('msg'); m.className = kind; m.innerHTML = html; }
 function shakeTile(id){ const t = stage.querySelector(`.tile[data-id="${id}"]`); if(!t) return; t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake'); }
 function leak(e){
-	const svg = document.getElementById('scene'); const g = document.getElementById('leaks');
-	let x=420,y=300;
-	if(e && e.clientX){ const pt = svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; const q = pt.matrixTransform(svg.getScreenCTM().inverse()); x=Math.max(60,Math.min(740,q.x)); y=Math.max(60,Math.min(480,q.y)); }
-	for(let i=0;i<4;i++){
-		const c = mk('ellipse',{cx:x+(i-1.5)*9, cy:y+i*4, rx:3.2, ry:5, fill:'#6f92b8', opacity:.95, class:'drip'});
-		c.style.animationDelay = (i*.12)+'s'; g.appendChild(c); setTimeout(()=>c.remove(), 1500+i*120);
+	const x = e && e.clientX ? e.clientX : window.innerWidth/2;
+	const y = e && e.clientY ? e.clientY : window.innerHeight/2;
+	for(let i=0;i<5;i++){
+		const d = document.createElement('div'); d.className='drip';
+		d.style.left = (x + (i-2)*9)+'px'; d.style.top = (y + i*5)+'px';
+		d.style.animationDelay = (i*0.1)+'s';
+		document.body.appendChild(d); setTimeout(()=>d.remove(), 1500+i*110);
 	}
 }
 function stampGate(p, kind){
@@ -656,184 +638,459 @@ document.getElementById('showchart').addEventListener('click', ()=>{ buildTable(
 document.getElementById('chartclose').addEventListener('click', ()=>document.getElementById('chart').classList.remove('on'));
 document.getElementById('chart').addEventListener('click', e=>{ if(e.target.id==='chart') e.currentTarget.classList.remove('on'); });
 
-/* ============================================================
-   THE SCENE — layers in unit space on two planes + screen details
-   P1: (u,v) -> (190+450u+140v, 470-340v)   main slope
-   P2: (u,v) -> (40+150u+140v, 420+50u-340v) wing
-   ============================================================ */
-const P1 = (u,v)=>[190+450*u+140*v, 470-340*v];
+
+/* ---------- shared helpers ---------- */
 const has = id => state.placed.has(id);
 const L = layer => PARTS.some(p=>p.layer===layer && state.placed.has(p.id));
 
-function planeLayers(g, wing){
-	g.innerHTML='';
-	const add = (n, layer)=>{ n.dataset.layer = layer; g.appendChild(n); return n; };
-	const rect = (x,y,w,h,f,extra={})=>mk('rect',Object.assign({x,y,width:w,height:h,fill:f},extra));
-	const hair = {'vector-effect':'non-scaling-stroke'};
-	// DECK (always under everything; visible after tear-off)
-	if(L('tearoff')){
-		const d = mk('g',{}); d.appendChild(rect(0,0,1,1,'#c9a26b'));
-		for(let v=0.25; v<1; v+=0.25) d.appendChild(mk('line',Object.assign({x1:0,y1:v,x2:1,y2:v,stroke:'#8f6d40','stroke-width':1},hair)));
-		for(let row=0; row<4; row++){ for(let u=(row%2?0.133:0); u<1; u+=0.267) if(u>0) d.appendChild(mk('line',Object.assign({x1:u,y1:row*0.25,x2:u,y2:row*0.25+0.25,stroke:'#8f6d40','stroke-width':1},hair))); }
-		// chalk lines on rafters
-		for(let i=1;i<15;i++) d.appendChild(mk('line',Object.assign({x1:i/15,y1:0,x2:i/15,y2:1,stroke:'#6f92b8','stroke-width':1,opacity:.5,'stroke-dasharray':'3 4'},hair)));
-		if(!wing && !L('rot')) d.appendChild(rect(0.267,0.5,0.266,0.25,'#5a4330'));
-		if(!wing && L('rot')) d.appendChild(rect(0.267,0.5,0.266,0.25,'#dcb87d'));
-		add(d,'deck');
-	} else {
-		// OLD ROOF
-		const o = mk('g',{}); o.appendChild(rect(0,0,1,1,'#5c514b'));
-		for(let k=0; k<17; k++) o.appendChild(rect(0,k*0.06,1,0.03,k%2?'#665a53':'#554a44'));
-		for(let i=0;i<7;i++) o.appendChild(rect(0.08+i*0.13,0.12+((i*37)%50)/100,0.05,0.02,'#8a7c72'));
-		if(!wing) o.appendChild(rect(0.30,0.55,0.18,0.14,'#3b3a3a',{opacity:.7}));
-		add(o,'old');
-	}
-	// WATER
-	if(L('water')){
-		const w = mk('g',{}); w.appendChild(rect(0,0,1,1,'#3d4a58'));
-		for(let v=0.1875; v<1; v+=0.1875){ w.appendChild(rect(0,v-0.012,1,0.012,'#2d3844')); w.appendChild(mk('line',Object.assign({x1:0,y1:v,x2:1,y2:v,stroke:'#6a7a8a','stroke-width':1},hair))); }
-		add(w,'water');
-	}
-	if(L('felt')){
-		const w = mk('g',{}); w.appendChild(rect(0,0,1,1,'#2c2926'));
-		for(let v=0.1875; v<1; v+=0.1875) w.appendChild(mk('line',Object.assign({x1:0,y1:v,x2:1,y2:v,stroke:'#4d4843','stroke-width':1},hair)));
-		add(w,'felt');
-	}
-	// STARTER + SHINGLES (+ cap)
-	if(L('starter')) add(rect(0,0,1,0.035,'#2b2827'),'starter');
-	if(L('shingles')){
-		const s = mk('g',{});
-		for(let v=0.02; v<0.97; v+=0.0293){ const k=Math.round(v/0.0293); s.appendChild(rect(0.03,v,0.97,0.0293,k%2?'#4d4846':'#565150')); s.appendChild(rect(0.03,v,0.97,0.006,'#2f2b2a')); }
-		add(s,'shingles');
-	}
-	if(!wing && L('vent')) add(rect(0,0.958,1,0.042,'#1c1a19'),'vent');
-	if(L('cap')){
-		const c = mk('g',{}); c.appendChild(rect(0,0.95,1,0.05,'#3a3534'));
-		for(let u=0;u<1;u+=0.035) c.appendChild(mk('line',Object.assign({x1:u,y1:0.95,x2:u,y2:1,stroke:'#262221','stroke-width':1},hair)));
-		add(c,'cap');
-	}
-	// ZONE 3 (inspector only)
-	if(!wing){ const z = rect(0,0,0.28,0.24,'none',{stroke:'#d4a24c','stroke-width':2,'stroke-dasharray':'6 4','vector-effect':'non-scaling-stroke'}); z.dataset.layer='zone3'; z.style.display='none'; g.appendChild(z); }
-}
 
-function screenDetails(){
-	const S = document.getElementById('S'); S.innerHTML='';
-	const add = (n, layer)=>{ n.dataset.layer=layer; S.appendChild(n); return n; };
-	// nails: dots down every rafter at 6 in. (192 in. run -> 32 per line)
-	if(L('nails')){
-		const g = mk('g',{});
-		for(let i=0;i<=15;i++){ const u=Math.min(0.995, Math.max(0.005,i/15)); for(let j=0;j<32;j++){ const v=(j+0.5)/32; const [x,y]=P1(u,v); g.appendChild(mk('circle',{cx:x,cy:y,r:1.4,fill:'#f2e9d2',opacity:.9})); } }
-		add(g,'nails');
-	}
-	// drip edge: eaves + wing rake
-	if(L('drip')){
-		const g = mk('g',{});
-		g.appendChild(mk('path',{d:'M190,470 H640',stroke:'#e3e8ee','stroke-width':4,fill:'none'}));
-		g.appendChild(mk('path',{d:'M190,474 H640',stroke:'#7d858e','stroke-width':1.5,fill:'none'}));
-		g.appendChild(mk('path',{d:'M40,420 L190,470',stroke:'#e3e8ee','stroke-width':4,fill:'none'}));
-		g.appendChild(mk('path',{d:'M40,420 L180,80',stroke:'#e3e8ee','stroke-width':3,fill:'none'}));
-		add(g,'drip');
-	}
-	if(L('cement')){ add(mk('path',{d:'M192,467 H638',stroke:'#c7883c','stroke-width':3,fill:'none','stroke-linecap':'round'}),'cement'); }
-	// valley metal along A(190,470) -> D(330,130)
-	if(L('valley')){
-		const g = mk('g',{});
-		g.appendChild(mk('path',{d:'M190,470 L330,130',stroke:'#cfd6dd','stroke-width':16,fill:'none','stroke-linecap':'butt'}));
-		g.appendChild(mk('path',{d:'M190,470 L330,130',stroke:'#8b949e','stroke-width':1.2,fill:'none'}));
-		add(g,'valley');
-	}
-	// step flashing along wall base B(640,470)->C(780,130)
-	if(L('step')){
-		const g = mk('g',{});
-		for(let k=0;k<17;k++){ const t=(k+0.5)/17; const x=640+140*t, y=470-340*t; g.appendChild(mk('rect',{x:x-9,y:y-6,width:11,height:9,fill:'#dfe4ea',stroke:'#6d757e','stroke-width':.8,transform:`rotate(-22 ${x} ${y})`})); }
-		add(g,'step');
-	}
-	if(L('kickout')){ add(mk('polygon',{points:'640,470 622,489 648,483',fill:'#e3e8ee',stroke:'#6d757e','stroke-width':1}),'kickout'); }
-	// boot at pipe base
-	if(L('boot')){
-		const g = mk('g',{});
-		g.appendChild(mk('ellipse',{cx:456.5,cy:322,rx:24,ry:11,fill:'#a9b0b8',stroke:'#5c6370','stroke-width':1}));
-		g.appendChild(mk('path',{d:'M447,322 L449,304 H464 L466,322 Z',fill:'#8d949c'}));
-		add(g,'boot');
-	}
-	// ridge highlight for vent
-	if(L('vent')){ add(mk('path',{d:'M330,130 H780',stroke:'#2a2726','stroke-width':6,fill:'none'}),'vent'); }
-	// seal dots
-	if(L('seal')){
-		const g = mk('g',{});
-		[[440,322],[473,322],[456,308],[336,131],[774,131],[700,300]].forEach(([x,y])=>g.appendChild(mk('circle',{cx:x,cy:y,r:3,fill:'#d8925a'})));
-		add(g,'seal');
-	}
-	// the permit: a document posted on top of the roof
-	if(L('permit')){
-		const g = mk('g',{transform:'translate(420 178) rotate(-8)'});
-		g.appendChild(mk('rect',{x:-15,y:-17,width:36,height:46,fill:'#000',opacity:.35,rx:1}));
-		g.appendChild(mk('path',{d:'M-18,-20 h26 l8,8 v38 h-34 z',fill:'#f6f2e8',stroke:'#6d6b62','stroke-width':1}));
-		g.appendChild(mk('path',{d:'M8,-20 v8 h8',fill:'none',stroke:'#6d6b62','stroke-width':1}));
-		g.appendChild(mk('path',{d:'M-12,-4 h20 M-12,3 h20 M-12,10 h20 M-12,17 h12',stroke:'#8a8578','stroke-width':1.4,'stroke-linecap':'round'}));
-		g.appendChild(mk('circle',{cx:8,cy:19,r:4.5,fill:'none',stroke:'#b3382a','stroke-width':1.6}));
-		const t = mk('text',{x:-12,y:-10,'font-size':6,'font-family':'ui-monospace,Menlo,monospace','letter-spacing':1,fill:'#161410'}); t.textContent='PERMIT'; g.appendChild(t);
-		add(g,'permit');
-	}
-	// the inspector: a man with a magnifying glass stands where each passed gate was checked
-	const spots = {gate1:[300,400], gate2:[560,300], gate3:[690,230], gate4:[250,440], gate5:[560,132]};
-	Object.keys(spots).forEach((k,i)=>{
-		if(!L(k)) return;
-		const [x,y] = spots[k];
-		const g = mk('g',{transform:`translate(${x-17} ${y-34}) scale(1.05)`});
-		const fo = mk('foreignObject',{x:0,y:0,width:34,height:32});
-		fo.innerHTML = inspectorSVG(i+1, '#f2e9d2');
-		g.appendChild(mk('ellipse',{cx:14,cy:33,rx:12,ry:3,fill:'#000',opacity:.4}));
-		g.appendChild(fo);
-		add(g,k);
+/* ============================================================
+   THE HOUSE — a real 3D model. Every roof part is a layer on a
+   plane, stacked in the order the county inspects them.
+
+   One gable house, 32 x 24, 6:12 pitch, with the three things
+   that leak: a porch gable (two valleys), a chimney (step and
+   counter flashing, kick-out), and a plumbing vent.
+
+   Same rule as the data: geometry is derived from the plane
+   definitions, never from a branch on a part id.
+   ============================================================ */
+const V3 = (x,y,z)=>new THREE.Vector3(x,y,z);
+const SL = 0.5;                       // 6:12
+const UP = 1/Math.sqrt(1+SL*SL);      // 0.8944 — run component of the up-slope unit
+const RS = SL/Math.sqrt(1+SL*SL);     // 0.4472 — rise component
+const RIDGE = 15, EAVE = 8.5, WALLTOP = 9;
+
+const PLANES = {
+	front:{ o:V3(-17,EAVE,13),  u:V3(1,0,0),  v:V3(0,RS,-UP), uLen:34, vLen:13*Math.sqrt(1.25), main:true },
+	back: { o:V3(17,EAVE,-13),  u:V3(-1,0,0), v:V3(0,RS,UP),  uLen:34, vLen:13*Math.sqrt(1.25), main:true },
+	pl:   { o:V3(-11,EAVE,8),   u:V3(0,0,1),  v:V3(UP,RS,0),  uLen:11, vLen:5*Math.sqrt(1.25) },
+	pr:   { o:V3(-1,EAVE,19),   u:V3(0,0,-1), v:V3(-UP,RS,0), uLen:11, vLen:5*Math.sqrt(1.25) },
+};
+for(const k in PLANES){ const p = PLANES[k]; p.n = new THREE.Vector3().crossVectors(p.u,p.v).normalize(); }
+// the porch cuts the front plane: valley v at a given u (feet from the plane origin)
+const valleyV = u => { const x = -17+u; const d = Math.abs(x+6); return d<=5 ? (5-d)*Math.sqrt(1.25) : -1; };
+function frontCovered(u,v){ const vv = valleyV(u); return vv>0 && v < vv; }
+
+const OFF = {old:0.34, rot:0.02, nails:0.05, water:0.12, felt:0.12, starter:0.21, cover:0.22, detail:0.16, permit:0.30};
+
+var renderer, scene, camera, world, canvas, texCache={}, built=false;
+var cam = {az:-0.62, el:0.42, dist:70, tx:0, ty:8.5, tz:0};
+var camGoal = Object.assign({}, cam);
+const CLIP = { water:new THREE.Plane(V3(1,0,0), 6), cover:new THREE.Plane(V3(1,0,0), -4) };
+const LAYERS = {};   // layer name -> [mesh]
+
+/* ---------- textures, drawn once ---------- */
+function tex(key, w, h, draw){
+	if(texCache[key]) return texCache[key];
+	const c = document.createElement('canvas'); c.width=w; c.height=h;
+	draw(c.getContext('2d'), w, h);
+	const t = new THREE.CanvasTexture(c);
+	t.wrapS = t.wrapT = THREE.RepeatWrapping;
+	t.anisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
+	t.encoding = THREE.sRGBEncoding;
+	texCache[key] = t; return t;
+}
+const T = {
+	old: ()=>tex('old',256,256,(g,w,h)=>{
+		g.fillStyle='#5b544e'; g.fillRect(0,0,w,h);
+		for(let r=0;r<4;r++){ const y=r*64;
+			g.fillStyle = r%2 ? '#635b54':'#57504a'; g.fillRect(0,y,w,58);
+			g.fillStyle='#3f3936'; g.fillRect(0,y+58,w,6);
+			for(let i=0;i<4;i++){ g.fillStyle='#4a443f'; g.fillRect(i*64+(r%2?32:0),y,4,58); }
+		}
+		for(let i=0;i<70;i++){ g.fillStyle=`rgba(${140+Math.random()*40},${135+Math.random()*35},${120+Math.random()*30},.13)`;
+			g.fillRect(Math.random()*w, Math.random()*h, 10+Math.random()*40, 3+Math.random()*8); }
+	}),
+	deck: ()=>tex('deck',256,128,(g,w,h)=>{           // one 8x4 sheet
+		g.fillStyle='#c9a46d'; g.fillRect(0,0,w,h);
+		for(let i=0;i<160;i++){ g.strokeStyle=`rgba(${120+Math.random()*60},${85+Math.random()*45},${45+Math.random()*30},.22)`;
+			g.lineWidth=1+Math.random()*2; g.beginPath();
+			const y=Math.random()*h; g.moveTo(0,y); g.bezierCurveTo(w/3,y+(Math.random()*14-7),2*w/3,y+(Math.random()*14-7),w,y+(Math.random()*10-5)); g.stroke(); }
+		g.strokeStyle='#8e6b3c'; g.lineWidth=3; g.strokeRect(1.5,1.5,w-3,h-3);
+		g.strokeStyle='rgba(111,146,184,.55)'; g.lineWidth=2; g.setLineDash([9,7]);
+		for(let i=1;i<4;i++){ g.beginPath(); g.moveTo(0,i*h/4); g.lineTo(w,i*h/4); g.stroke(); }
+	}),
+	newply: ()=>tex('newply',256,128,(g,w,h)=>{
+		g.fillStyle='#e2c390'; g.fillRect(0,0,w,h);
+		for(let i=0;i<120;i++){ g.strokeStyle=`rgba(${160+Math.random()*50},${120+Math.random()*40},${70+Math.random()*30},.2)`;
+			g.lineWidth=1+Math.random(); g.beginPath(); const y=Math.random()*h; g.moveTo(0,y); g.lineTo(w,y+(Math.random()*8-4)); g.stroke(); }
+		g.strokeStyle='#a8814a'; g.lineWidth=3; g.strokeRect(1.5,1.5,w-3,h-3);
+	}),
+	rot: ()=>tex('rot',256,128,(g,w,h)=>{
+		g.fillStyle='#4a3a2a'; g.fillRect(0,0,w,h);
+		for(let i=0;i<90;i++){ g.fillStyle=`rgba(${20+Math.random()*30},${16+Math.random()*22},${10+Math.random()*16},.6)`;
+			g.beginPath(); g.ellipse(Math.random()*w,Math.random()*h,6+Math.random()*26,3+Math.random()*10,Math.random()*3,0,7); g.fill(); }
+		g.strokeStyle='#2a2018'; g.lineWidth=3; g.strokeRect(1.5,1.5,w-3,h-3);
+	}),
+	nails: ()=>tex('nails',64,64,(g,w,h)=>{           // one nail per bay-course
+		g.clearRect(0,0,w,h);
+		g.fillStyle='#efe6d0'; g.beginPath(); g.arc(w/2,h/2,5,0,7); g.fill();
+		g.fillStyle='rgba(60,50,35,.65)'; g.beginPath(); g.arc(w/2+1.5,h/2+1.5,5,0,7); g.fill();
+		g.fillStyle='#f6efdc'; g.beginPath(); g.arc(w/2,h/2,4,0,7); g.fill();
+	}),
+	water: ()=>tex('water',256,256,(g,w,h)=>{         // self-adhered, one 3 ft course
+		g.fillStyle='#3f4b58'; g.fillRect(0,0,w,h);
+		for(let i=0;i<300;i++){ g.fillStyle=`rgba(${90+Math.random()*50},${100+Math.random()*50},${112+Math.random()*50},.10)`;
+			g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*5,2+Math.random()*4); }
+		g.fillStyle='#2e3945'; g.fillRect(0,0,w,14);
+		g.strokeStyle='#68788a'; g.lineWidth=2; g.beginPath(); g.moveTo(0,15); g.lineTo(w,15); g.stroke();
+	}),
+	felt: ()=>tex('felt',256,256,(g,w,h)=>{
+		g.fillStyle='#2b2825'; g.fillRect(0,0,w,h);
+		for(let i=0;i<400;i++){ g.fillStyle=`rgba(${70+Math.random()*40},${66+Math.random()*36},${60+Math.random()*30},.12)`;
+			g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*4,2); }
+		g.fillStyle='#211f1d'; g.fillRect(0,0,w,12);
+		for(let i=0;i<8;i++){ g.fillStyle='#9aa0a6'; g.beginPath(); g.arc(16+i*32,7,3.2,0,7); g.fill(); }
+	}),
+	shingle: ()=>tex('shingle',256,256,(g,w,h)=>{     // 4 courses of laminate, 5 in. exposure
+		g.fillStyle='#2c2928'; g.fillRect(0,0,w,h);
+		for(let r=0;r<4;r++){ const y=h-(r+1)*64;
+			g.fillStyle = r%2 ? '#37332f':'#2f2c2a'; g.fillRect(0,y,w,64);
+			for(let i=0;i<6;i++){ const x=(i*42+(r%2?21:0))%w;
+				g.fillStyle=`rgba(${14+Math.random()*18},${13+Math.random()*16},${12+Math.random()*15},.6)`; g.fillRect(x,y+8,38,34); }
+			g.fillStyle='#1b1918'; g.fillRect(0,y,w,7);
+			g.fillStyle='rgba(255,255,255,.05)'; g.fillRect(0,y+7,w,3);
+		}
+		for(let i=0;i<900;i++){ g.fillStyle=`rgba(${150+Math.random()*70},${145+Math.random()*65},${140+Math.random()*60},.055)`; g.fillRect(Math.random()*w,Math.random()*h,2,2); }
+	}),
+	stucco: ()=>tex('stucco',128,128,(g,w,h)=>{
+		g.fillStyle='#ddd2c0'; g.fillRect(0,0,w,h);
+		for(let i=0;i<1400;i++){ g.fillStyle=`rgba(${175+Math.random()*45},${165+Math.random()*40},${148+Math.random()*38},.35)`; g.fillRect(Math.random()*w,Math.random()*h,2,2); }
+	}),
+	brick: ()=>tex('brick',128,128,(g,w,h)=>{
+		g.fillStyle='#7d5348'; g.fillRect(0,0,w,h);
+		for(let r=0;r<8;r++){ const y=r*16; for(let i=0;i<4;i++){ const x=i*32+(r%2?16:0);
+			g.fillStyle=`rgb(${120+Math.random()*30},${68+Math.random()*20},${56+Math.random()*16})`; g.fillRect(x+1.5,y+1.5,29,13); } }
+	}),
+	permit: ()=>tex('permit',128,168,(g,w,h)=>{
+		g.fillStyle='#f7f3e8'; g.fillRect(0,0,w,h);
+		g.strokeStyle='#a49b88'; g.lineWidth=2; g.strokeRect(1,1,w-2,h-2);
+		g.fillStyle='#161410'; g.font='bold 15px monospace'; g.fillText('PERMIT',12,26);
+		g.fillStyle='#8a8578'; g.font='9px monospace'; g.fillText('RE-ROOF · IRC',12,40);
+		g.strokeStyle='#b6ae9c'; g.lineWidth=3;
+		for(let i=0;i<7;i++){ g.beginPath(); g.moveTo(12,56+i*13); g.lineTo(i===6?70:w-12,56+i*13); g.stroke(); }
+		g.strokeStyle='#b3382a'; g.lineWidth=3; g.beginPath(); g.arc(w-32,h-34,17,0,7); g.stroke();
+		g.fillStyle='#b3382a'; g.font='bold 9px monospace'; g.fillText('ISSUED',w-52,h-31);
+	}),
+};
+function manTexture(n){
+	return tex('man'+n, 96, 96, (g,w,h)=>{
+		g.clearRect(0,0,w,h);
+		const ink='#f2e9d2', shade='rgba(0,0,0,.45)';
+		g.fillStyle=shade; g.beginPath(); g.ellipse(40,90,20,5,0,0,7); g.fill();
+		g.fillStyle='#2f3c4c'; g.beginPath(); g.moveTo(14,88); g.lineTo(14,50); g.quadraticCurveTo(32,38,50,50); g.lineTo(50,88); g.closePath(); g.fill();
+		g.fillStyle=ink; g.beginPath(); g.arc(32,26,12,0,7); g.fill();
+		g.fillStyle='#d4a24c'; g.beginPath(); g.ellipse(32,15,17,6,0,0,7); g.fill();   // hard hat
+		g.strokeStyle=ink; g.lineWidth=7; g.lineCap='round'; g.beginPath(); g.moveTo(46,58); g.lineTo(60,46); g.stroke();
+		g.fillStyle='rgba(230,245,255,.45)'; g.beginPath(); g.arc(70,38,19,0,7); g.fill();
+		g.strokeStyle=ink; g.lineWidth=6; g.beginPath(); g.arc(70,38,19,0,7); g.stroke();
+		g.strokeStyle=ink; g.lineWidth=8; g.beginPath(); g.moveTo(58,52); g.lineTo(50,60); g.stroke();
+		g.fillStyle='#161410'; g.font='bold 22px Georgia,serif'; g.textAlign='center'; g.fillText(String(n),70,46);
 	});
-	// counter flashing on the wall
-	document.getElementById('L-counter').style.display = L('counter') ? '' : 'none';
 }
 
-function redraw(){
-	planeLayers(document.getElementById('P1'), false);
-	planeLayers(document.getElementById('P2'), true);
-	screenDetails();
+/* ---------- geometry helpers ---------- */
+function quad(pts, plane, uScale, vScale){
+	const g = new THREE.BufferGeometry();
+	const pos=[], uv=[], nor=[];
+	pts.forEach(p=>{
+		pos.push(p.x,p.y,p.z);
+		const d = p.clone().sub(plane.o);
+		uv.push(d.dot(plane.u)/uScale, d.dot(plane.v)/vScale);
+		nor.push(plane.n.x, plane.n.y, plane.n.z);
+	});
+	g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+	g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2));
+	g.setAttribute('normal', new THREE.Float32BufferAttribute(nor,3));
+	g.setIndex([0,1,2, 0,2,3]);
+	return g;
+}
+const at = (plane,u,v,off)=> plane.o.clone().addScaledVector(plane.u,u).addScaledVector(plane.v,v).addScaledVector(plane.n,off||0);
+function patch(plane, u0,u1,v0,v1, off, mat, uScale, vScale){
+	const pts=[at(plane,u0,v0,off), at(plane,u1,v0,off), at(plane,u1,v1,off), at(plane,u0,v1,off)];
+	return new THREE.Mesh(quad(pts, plane, uScale||1, vScale||1), mat);
+}
+/* the front plane minus the porch bite: five patches that tile it exactly */
+function planePieces(key){
+	const P = PLANES[key];
+	if(key!=='front') return [[0,P.uLen,0,P.vLen]];
+	// porch occupies u in [6,16], under the valley line
+	return [[0,6,0,P.vLen],[16,34,0,P.vLen],[6,11,valleyV(6.0001),P.vLen],[11,16,valleyV(15.9999),P.vLen]];
+}
+function sheet(key, off, mat, uS, vS, layer, clip){
+	const P = PLANES[key];
+	planePieces(key).forEach(([u0,u1,v0,v1])=>{
+		if(key==='front' && (u0===6||u0===11)){
+			// the two triangles beside the porch: approximate with a trapezoid that follows the valley
+			const a = u0===6 ? [6,11] : [11,16];
+			const p = [at(P,a[0], u0===6?0:valleyV(a[0]),off), at(P,a[1], u0===6?valleyV(a[1]):0,off), at(P,a[1],P.vLen,off), at(P,a[0],P.vLen,off)];
+			const m = new THREE.Mesh(quad(p,P,uS,vS), mat); reg(m, layer, clip); return;
+		}
+		const m = patch(P,u0,u1,v0,v1,off,mat,uS,vS); reg(m, layer, clip);
+	});
+}
+function reg(mesh, layer, clip){
+	mesh.castShadow = true; mesh.receiveShadow = true;
+	mesh.userData.layer = layer; mesh.userData.clip = clip||null;
+	(LAYERS[layer] = LAYERS[layer] || []).push(mesh);
+	world.add(mesh); return mesh;
+}
+function box(w,h,d,x,y,z,mat,layer,rotX){
+	const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+	m.position.set(x,y,z); if(rotX) m.rotation.x = rotX;
+	return layer ? reg(m,layer) : (world.add(m), m.castShadow=m.receiveShadow=true, m);
+}
+const MAT = {
+	metal: ()=>new THREE.MeshStandardMaterial({color:0xdfe5ec, metalness:.85, roughness:.32}),
+	lead:  ()=>new THREE.MeshStandardMaterial({color:0xa8afb6, metalness:.7, roughness:.45}),
+	seal:  ()=>new THREE.MeshStandardMaterial({color:0xd8925a, roughness:.6}),
+	dark:  ()=>new THREE.MeshStandardMaterial({color:0x24211f, roughness:.95}),
+	wood:  ()=>new THREE.MeshStandardMaterial({color:0x8b6b4d, roughness:.9}),
+};
+
+/* ---------- the static house (built once) ---------- */
+var shell;
+function buildShell(){
+	shell = new THREE.Group(); scene.add(shell);
+	const stucco = new THREE.MeshStandardMaterial({map:T.stucco(), roughness:.95});
+	stucco.map.repeat.set(8,3);
+	const walls = new THREE.Mesh(new THREE.BoxGeometry(32,WALLTOP,24), stucco);
+	walls.position.set(0,WALLTOP/2,0); walls.castShadow=walls.receiveShadow=true; shell.add(walls);
+	// gable end triangles
+	[-16,16].forEach(x=>{
+		const g = new THREE.BufferGeometry();
+		g.setAttribute('position', new THREE.Float32BufferAttribute([x,WALLTOP,-12, x,WALLTOP,12, x,RIDGE,0],3));
+		g.computeVertexNormals();
+		const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({map:T.stucco(), roughness:.95, side:THREE.DoubleSide}));
+		m.castShadow=true; shell.add(m);
+	});
+	// porch: gable face, slab, posts
+	const pg = new THREE.BufferGeometry();
+	pg.setAttribute('position', new THREE.Float32BufferAttribute([-10.6,8.6,18, -1.4,8.6,18, -6,10.9,18],3));
+	pg.computeVertexNormals();
+	shell.add(new THREE.Mesh(pg, new THREE.MeshStandardMaterial({color:0xc9bda9, roughness:.95, side:THREE.DoubleSide})));
+	const slab = box(11,0.5,7,-6,0.25,15.5, new THREE.MeshStandardMaterial({color:0xb9b1a4, roughness:.95})); shell.add(slab);
+	[[-10.2,17.6],[-1.8,17.6]].forEach(([x,z])=> shell.add(box(0.7,8.2,0.7,x,4.35,z, new THREE.MeshStandardMaterial({color:0xe8e0d2, roughness:.9}))));
+	// windows + door
+	const glass = new THREE.MeshStandardMaterial({color:0x2b3a49, metalness:.35, roughness:.15});
+	[[6,12.06],[12,12.06]].forEach(([x,z])=> shell.add(box(3.6,4.2,0.2,x,5.4,z,glass)));
+	shell.add(box(3.4,4,0.2,-13,5.4,12.06,glass));
+	shell.add(box(3.2,7,0.25,-6,3.5,12.06, new THREE.MeshStandardMaterial({color:0x5c4433, roughness:.7})));
+	// fascia + gutter along both main eaves
+	[13.35,-13.35].forEach(z=>{
+		shell.add(box(34.4,0.9,0.55,0,8.1,z, MAT.wood()));
+		const gut = new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,34.4,10), new THREE.MeshStandardMaterial({color:0x8f979f, metalness:.5, roughness:.5}));
+		gut.rotation.z = Math.PI/2; gut.position.set(0,7.55,z); shell.add(gut);
+	});
+	// chimney
+	const ch = box(3,12,3,10,12,6, new THREE.MeshStandardMaterial({map:T.brick(), roughness:.95})); ch.material.map.repeat.set(2,7); shell.add(ch);
+	shell.add(box(3.5,0.4,3.5,10,18.1,6, new THREE.MeshStandardMaterial({color:0x9a9086, roughness:.9})));
+	// plumbing vent
+	const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,2.2,12), new THREE.MeshStandardMaterial({color:0xc9ccd1, roughness:.55}));
+	pipe.position.set(-1, 11.6, 9); pipe.castShadow=true; shell.add(pipe);
+	// ground
+	const ground = new THREE.Mesh(new THREE.CircleGeometry(120,64), new THREE.MeshStandardMaterial({color:0x11170f, roughness:1}));
+	ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; shell.add(ground);
+	const walk = box(5,0.12,18,-6,0.06,28, new THREE.MeshStandardMaterial({color:0x232322, roughness:1})); shell.add(walk);
+}
+
+/* ---------- the layers (rebuilt on every placement) ---------- */
+function buildLayers(){
+	for(const k in LAYERS) delete LAYERS[k];
+	while(world.children.length) world.remove(world.children[0]);
+	const keys = ['front','back','pl','pr'];
+	const stdMat = (t,uR,vR)=> new THREE.MeshStandardMaterial({map:t, roughness:.92});
+
+	if(!L('tearoff')){
+		keys.forEach(k=>sheet(k, OFF.old, stdMat(T.old()), 8, 8, 'old'));
+	} else {
+		keys.forEach(k=>sheet(k, 0, stdMat(T.deck()), 8, 4, 'deck'));
+		// the soft sheet
+		const P = PLANES.front;
+		reg(patch(P, 0.5,7, 6,10, OFF.rot, new THREE.MeshStandardMaterial({map:L('rot')?T.newply():T.rot(), roughness:.95}), 6.5, 4), L('rot')?'rot':'deck');
+	}
+	if(L('nails')) keys.forEach(k=>sheet(k, OFF.nails, new THREE.MeshStandardMaterial({map:T.nails(), transparent:true, roughness:1}), 1.333, 0.5, 'nails'));
+	if(L('water')) keys.forEach(k=>sheet(k, OFF.water, stdMat(T.water()), 6, 3, 'water', 'water'));
+	if(L('felt'))  keys.forEach(k=>sheet(k, OFF.felt,  stdMat(T.felt()),  6, 3, 'felt',  'water'));
+	if(L('starter')) keys.forEach(k=>{ const P=PLANES[k]; reg(patch(P,0,P.uLen,0,0.55,OFF.starter, MAT.dark(), 1,1), 'starter','cover'); });
+	if(L('shingles')) keys.forEach(k=>sheet(k, OFF.cover, stdMat(T.shingle()), 3, 3, 'shingles', 'cover'));
+
+	// ---- details ----
+	if(L('drip')){
+		const m = MAT.metal();
+		keys.forEach(k=>{
+			const P = PLANES[k];
+			reg(new THREE.Mesh(quad([at(P,0,0,OFF.detail),at(P,P.uLen,0,OFF.detail),at(P,P.uLen,0.75,OFF.detail),at(P,0,0.75,OFF.detail)],P,1,1), m), 'drip');
+			const lip = box(k==='front'||k==='back'?34.2:0.35, 0.12, k==='front'||k==='back'?0.35:11.2, 0,0,0, m);
+			lip.position.copy(at(P,P.uLen/2,-0.12,OFF.detail-0.2)); world.remove(lip); reg(lip,'drip');
+		});
+		// rakes on the main gable
+		['front','back'].forEach(k=>{ const P=PLANES[k];
+			[0,P.uLen].forEach(u=>reg(new THREE.Mesh(quad([at(P,u,0,OFF.detail),at(P,u+(u?-0.7:0.7),0,OFF.detail),at(P,u+(u?-0.7:0.7),P.vLen,OFF.detail),at(P,u,P.vLen,OFF.detail)],P,1,1), m),'drip'));
+		});
+	}
+	if(L('cement')){
+		const m = MAT.seal();
+		keys.forEach(k=>{ const P=PLANES[k];
+			reg(new THREE.Mesh(quad([at(P,0,0.6,OFF.detail+.02),at(P,P.uLen,0.6,OFF.detail+.02),at(P,P.uLen,0.95,OFF.detail+.02),at(P,0,0.95,OFF.detail+.02)],P,1,1), m),'cement'); });
+	}
+	if(L('valley')){
+		const m = MAT.metal();
+		[[PLANES.front, 6, 11, true],[PLANES.front, 16, 11, false],[PLANES.pl, 0, 5, true],[PLANES.pr, 0, 5, true]].forEach(([P,a,b,dir])=>{
+			let pts;
+			if(P===PLANES.front){
+				const u0 = dir? 6:16, u1 = 11;
+				pts = [at(P,u0,dir?0:0,OFF.detail), at(P,u0+(dir?1.1:-1.1),dir?0:0,OFF.detail), at(P,u1+(dir?-1.1:1.1),valleyV(u1)-0.55,OFF.detail), at(P,u1,valleyV(u1),OFF.detail)];
+			} else {
+				pts = [at(P,0,0,OFF.detail), at(P,0,1.1,OFF.detail), at(P,P.uLen*0+5,P.vLen,OFF.detail), at(P,0,P.vLen,OFF.detail)];
+				pts = [at(P,0,0,OFF.detail), at(P,1.2,0,OFF.detail), at(P,1.2+5,P.vLen,OFF.detail), at(P,5,P.vLen,OFF.detail)];
+			}
+			reg(new THREE.Mesh(quad(pts,P,1,1), m), 'valley');
+		});
+	}
+	if(L('boot')){
+		const P = PLANES.front, base = at(P,16,4.47,OFF.detail);
+		const q = new THREE.Quaternion().setFromUnitVectors(V3(0,1,0), P.n);
+		const fl = new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,0.09,20), MAT.lead());
+		fl.position.copy(base); fl.quaternion.copy(q); reg(fl,'boot');
+		const col = new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.42,0.7,14), MAT.lead());
+		col.position.copy(base.clone().addScaledVector(P.n,0.05)); col.position.y += 0.35; reg(col,'boot');
+	}
+	if(L('step')){
+		const m = MAT.metal(), ang = -Math.atan(SL);
+		[8.4,11.6].forEach(x=>{ for(let i=0;i<6;i++){ const z = 7.4 - i*0.55;
+			const b = box(0.1,0.85,0.7, x, RIDGE-SL*z+0.30, z, m, 'step'); b.rotation.x = ang; } });
+	}
+	if(L('counter')){
+		const m = MAT.metal(), ang=-Math.atan(SL);
+		[8.35,11.65].forEach(x=>{ const b = box(0.12,0.9,3.4, x, RIDGE-SL*6+1.35, 6, m, 'counter'); b.rotation.x = ang; });
+		box(3.4,0.9,0.12,10,RIDGE-SL*4.4+1.5,4.42, m, 'counter');
+	}
+	if(L('kickout')){
+		const k = box(0.9,0.75,0.9, 11.9, RIDGE-SL*7.9+0.45, 7.9, MAT.metal(), 'kickout');
+		k.rotation.set(-Math.atan(SL),0,0.5);
+	}
+	if(L('vent')) box(32,0.5,1.4, 0,15.15,0, MAT.dark(), 'vent');
+	if(L('cap')){
+		box(32.4,0.42,2.2, 0,15.42,0, new THREE.MeshStandardMaterial({map:T.shingle(), roughness:.92}), 'cap').material.map.repeat.set(16,1);
+		box(2.2,0.42,11.2, -6,11.32,13.5, new THREE.MeshStandardMaterial({map:T.shingle(), roughness:.92}), 'cap').material.map.repeat.set(1,6);
+	}
+	if(L('seal')){
+		const m = MAT.seal();
+		[[-1,11.9,9],[16,15.6,0],[-16,15.6,0],[8.35,13.4,6],[11.65,13.4,6],[-6,11.5,19]].forEach(([x,y,z])=>{
+			const s = new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8), m); s.position.set(x,y,z); reg(s,'seal');
+		});
+	}
+	// the permit, posted on the roof
+	if(L('permit')){
+		const P = PLANES.front;
+		reg(patch(P, 1.6,4.4, 10.4,13.6, OFF.permit, new THREE.MeshBasicMaterial({map:T.permit(), side:THREE.DoubleSide}), 2.8,3.2), 'permit');
+	}
+	// Zone 3 outline (inspector view only)
+	{
+		const P = PLANES.front, o = OFF.permit;
+		const g = new THREE.BufferGeometry().setFromPoints([at(P,26,0.6,o),at(P,33,0.6,o),at(P,33,6,o),at(P,26,6,o),at(P,26,0.6,o)]);
+		const line = new THREE.Line(g, new THREE.LineBasicMaterial({color:0xd4a24c}));
+		line.userData.layer='zone3'; (LAYERS.zone3=LAYERS.zone3||[]).push(line); line.visible=false; world.add(line);
+	}
+	// the inspectors who already signed
+	const SPOTS = {gate1:['front',4,4], gate2:['front',21,8], gate3:['front',24,8.6], gate4:['front',30,2.6], gate5:['front',17,13.4]};
+	Object.keys(SPOTS).forEach((k,i)=>{
+		if(!L(k)) return;
+		const [pk,u,v] = SPOTS[k], P = PLANES[pk];
+		const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:manTexture(i+1), transparent:true, alphaTest:0.12, depthWrite:false, sizeAttenuation:true}));
+		sp.scale.set(2.6,2.6,1); sp.position.copy(at(P,u,v,0.4)); sp.position.y += 1.1;
+		sp.userData.layer = k; (LAYERS[k]=LAYERS[k]||[]).push(sp); world.add(sp);
+	});
 	applyView();
 }
 
+/* ---------- views ---------- */
+const VIEWS = {
+	cutaway:  {az:-0.62, el:0.46, dist:70, ty:9},
+	street:   {az:-0.30, el:0.16, dist:78, ty:7},
+	inspector:{az:-0.75, el:0.34, dist:52, ty:10},
+};
 function applyView(){
 	const v = state.view;
-	const p1 = document.getElementById('P1');
-	const bands = document.getElementById('bands'); bands.innerHTML='';
-	const litSet = new Set();
-	if(v==='inspector'){
-		const openGate = PARTS.find(p=>p.gate && !state.placed.has(p.id));
-		(openGate ? openGate.lit : []).forEach(x=>litSet.add(x));
-	}
-	document.querySelectorAll('[data-layer]').forEach(n=>{
-		const layer = n.dataset.layer;
-		n.removeAttribute('clip-path'); n.style.opacity=''; n.style.filter='';
-		if(layer==='zone3'){ n.style.display = (v==='inspector' && litSet.has('zone3')) ? '' : 'none'; return; }
-		if(layer==='nails' && (L('water')||L('felt'))){
-			if(v==='street') { n.style.opacity='0'; return; }
-			if(v==='cutaway') n.setAttribute('clip-path','url(#cutNails)');
-		}
-		if(v==='cutaway' && n.parentNode===p1){
-			if(layer==='water'||layer==='felt') n.setAttribute('clip-path','url(#cutWater)');
-			if(layer==='starter'||layer==='shingles') n.setAttribute('clip-path','url(#cutCover)');
-		}
-		if(v==='inspector'){ if(litSet.has(layer)) n.style.filter='url(#glow)'; else n.style.opacity='.18'; }
+	const lit = new Set();
+	if(v==='inspector'){ const g = PARTS.find(p=>p.gate && !state.placed.has(p.id)); (g? g.lit:[]).forEach(x=>lit.add(x)); }
+	Object.keys(LAYERS).forEach(layer=>{
+		LAYERS[layer].forEach(m=>{
+			if(layer==='zone3'){ m.visible = v==='inspector' && lit.has('zone3'); return; }
+			m.visible = true;
+			const mat = m.material;
+			if(mat.clippingPlanes !== undefined) mat.clippingPlanes = (v==='cutaway' && m.userData.clip) ? [CLIP[m.userData.clip]] : null;
+			const dim = v==='inspector' && !lit.has(layer);
+			if(mat.opacity !== undefined){ mat.transparent = dim || mat.userData_wasTransparent || layer==='nails'; mat.opacity = dim ? 0.16 : 1; }
+			mat.needsUpdate = true;
+		});
 	});
-	document.getElementById('wall').style.opacity = v==='inspector' ? '.5' : '';
-	document.getElementById('pipe').style.opacity = v==='inspector' ? '.5' : '';
-	if(v==='cutaway'){
-		[[0.12,'deck'],[0.40,'underlayment'],[0.74,'cover']].forEach(([u,t])=>{ const [x,y]=P1(u,-0.09); const tx = mk('text',{x,y,class:'bandlab','text-anchor':'middle'}); tx.textContent=t; bands.appendChild(tx); });
-	}
+	if(shell) shell.traverse(o=>{ if(o.material && o.material.opacity!==undefined){ const dim = v==='inspector'; o.material.transparent = dim; o.material.opacity = dim?0.35:1; } });
+	Object.assign(camGoal, VIEWS[v]);
+	document.getElementById('bands').classList.toggle('on', v==='cutaway');
 }
+function redraw(){ if(built) buildLayers(); }
+
+/* ---------- boot ---------- */
+function init3d(){
+	canvas = document.getElementById('view3d');
+	renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+	renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+	renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	renderer.localClippingEnabled = true;
+	renderer.outputEncoding = THREE.sRGBEncoding;
+	scene = new THREE.Scene();
+	scene.background = new THREE.Color(0x080d14);
+	scene.fog = new THREE.Fog(0x080d14, 62, 165);
+	camera = new THREE.PerspectiveCamera(34, 1, 1, 400);
+	world = new THREE.Group(); scene.add(world);
+	scene.add(new THREE.HemisphereLight(0x6d93b8, 0x1a1710, 0.42));
+	const sun = new THREE.DirectionalLight(0xfff0d4, 1.05);
+	sun.position.set(34,46,26); sun.castShadow = true;
+	sun.shadow.mapSize.set(1024,1024);
+	const c = sun.shadow.camera; c.left=-46; c.right=46; c.top=46; c.bottom=-46; c.near=1; c.far=140;
+	scene.add(sun);
+	const fill = new THREE.DirectionalLight(0x7c9cc0, 0.22); fill.position.set(-30,18,-24); scene.add(fill);
+	buildShell(); built = true; buildLayers(); resize3d();
+	// orbit
+	let spin=null;
+	canvas.addEventListener('pointerdown', e=>{ spin={x:e.clientX,y:e.clientY}; canvas.classList.add('spinning'); canvas.setPointerCapture(e.pointerId); });
+	canvas.addEventListener('pointermove', e=>{ if(!spin) return;
+		camGoal.az -= (e.clientX-spin.x)*0.006; camGoal.el = Math.max(0.06, Math.min(1.15, camGoal.el + (e.clientY-spin.y)*0.004));
+		cam.az = camGoal.az; cam.el = camGoal.el; spin={x:e.clientX,y:e.clientY}; });
+	['pointerup','pointercancel'].forEach(t=>canvas.addEventListener(t, ()=>{ spin=null; canvas.classList.remove('spinning'); }));
+	canvas.addEventListener('wheel', e=>{ e.preventDefault(); camGoal.dist = Math.max(34, Math.min(120, camGoal.dist + e.deltaY*0.06)); }, {passive:false});
+	tick();
+}
+function resize3d(){
+	if(!renderer) return;
+	const W = window.innerWidth, H = window.innerHeight;
+	renderer.setSize(W,H,false); camera.aspect = W/H; camera.updateProjectionMatrix();
+	const r = document.getElementById('roofbox').getBoundingClientRect();
+	const half = THREE.MathUtils.degToRad(camera.fov)/2;
+	const av = Math.atan(Math.tan(half)*(r.height/H));
+	const ah = Math.atan(Math.tan(half)*camera.aspect*(r.width/W));
+	const fit = 19.5 / Math.sin(Math.max(0.12, Math.min(av,ah)));
+	VIEWS.cutaway.dist = fit; VIEWS.street.dist = fit*1.1; VIEWS.inspector.dist = fit*0.76;
+	camGoal.dist = VIEWS[state.view].dist; cam.dist = camGoal.dist;
+}
+function tick(){
+	requestAnimationFrame(tick);
+	['az','el','dist','ty'].forEach(k=>{ cam[k] += ((camGoal[k]===undefined?cam[k]:camGoal[k]) - cam[k]) * 0.08; });
+	const d = cam.dist, ce = Math.cos(cam.el);
+	camera.position.set(Math.sin(cam.az)*ce*d, Math.sin(cam.el)*d + cam.ty, Math.cos(cam.az)*ce*d);
+	camera.lookAt(0, cam.ty, 0);
+	renderer.render(scene, camera);
+}
+window.addEventListener('resize', resize3d);
 document.querySelectorAll('.toggle button').forEach(b=>b.addEventListener('click', ()=>{
 	document.querySelectorAll('.toggle button').forEach(x=>x.classList.toggle('on', x===b));
 	state.view = b.dataset.view; applyView();
-	say('', b.dataset.view==='street' ? '<b>From the street.</b> Shingles, drip edge, a vent. Everything that keeps water out is under here — and a four-nail roof looks exactly like this too.'
+	say('', b.dataset.view==='street' ? '<b>From the street.</b> Shingles, drip edge, a vent. Everything that keeps water out is under there — and a four-nail roof looks exactly like this too.'
 		: b.dataset.view==='inspector' ? '<b>Inspector view.</b> Only what the open gate checks is lit. If he cannot see it, he cannot pass it.'
-		: '<b>Cutaway.</b> The roof as a stack — deck, underlayment, cover — peeled back so you can see every layer you placed.');
+		: '<b>Cutaway.</b> The stack peeled back across the house — deck on the left, underlayment in the middle, cover on the right.');
 }));
-
-buildRing(); redraw(); score();
+buildRing(); refreshTiles(); init3d(); score();
 </script>
